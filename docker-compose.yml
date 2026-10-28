@@ -1,0 +1,25 @@
+# LearnHarness self-host stack (Coolify / Dokploy / `docker compose up -d`).
+# See docs/self-hosting.md → "Docker, Coolify and Dokploy".
+services:
+  learnharness:
+    build: .
+    restart: unless-stopped
+    environment:
+      # Required: the token each device enters once at /access (16+ chars).
+      - LH_ACCESS_TOKEN=${LH_ACCESS_TOKEN}
+      # Optional: join your tailnet and serve HTTPS there (private access).
+      # Create a key at https://login.tailscale.com/admin/settings/keys
+      - TS_AUTHKEY=${TS_AUTHKEY:-}
+      - TS_HOSTNAME=${TS_HOSTNAME:-learnharness}
+    volumes:
+      # Sessions, knowledge graph, settings, API keys, Tailscale identity.
+      - learnharness-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/manifest.webmanifest"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  learnharness-data:

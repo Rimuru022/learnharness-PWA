@@ -74,6 +74,24 @@ git pull && bash deploy/self-host/setup.sh   # update (keeps your env file and d
 
 The researcher's interactive demos and the visual maker render through headless Chrome. Install Chromium (`sudo apt install chromium` or Google Chrome) and, if it is not on a standard path, set `CHROME_PATH` in the env file. Everything else works without it.
 
+## Docker, Coolify and Dokploy
+
+The repository ships a `Dockerfile` and a `docker-compose.yml`, so the app can live in a self-hosting dashboard next to your other services. The image bundles headless Chromium (demos and visuals work out of the box) and an **optional embedded Tailscale node**. There is one container, no extra capabilities and no TUN device.
+
+| Variable | |
+|---|---|
+| `LH_ACCESS_TOKEN` | Required, 16+ characters. The `/access` sign-in token. |
+| `TS_AUTHKEY` | Optional. A Tailscale auth key: the container joins your tailnet and serves `https://$TS_HOSTNAME.<tailnet>.ts.net`. Its identity is kept in the volume, so the key is used only once. |
+| `TS_HOSTNAME` | Optional, defaults to `learnharness`. |
+
+Everything persistent lives in the `/data` volume: sessions, the graph, settings, API keys and the Tailscale identity.
+
+**Coolify:** New resource → *Public Repository* (or GitHub App for a private fork) → build pack **Docker Compose** → set `LH_ACCESS_TOKEN` (and `TS_AUTHKEY`) in Environment Variables → Deploy. Do **not** assign a domain if you want tailnet-only access. If you prefer a public domain through Coolify's proxy instead, assign one to the `learnharness` service on port 3000 and leave `TS_AUTHKEY` empty; the access token is then the only lock, so make it long.
+
+**Dokploy:** Create → Compose → point it at the repository; same variables.
+
+**Plain Docker:** `LH_ACCESS_TOKEN=... TS_AUTHKEY=... docker compose up -d`.
+
 ## Without the setup script
 
 ```bash
