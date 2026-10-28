@@ -45,3 +45,7 @@ export * from "./observability.ts";
 export * from "./model-catalog.ts";
 export { subscriptionControlsResponse, subscriptionBrowserResponse } from "./web-subscription-http.ts";
 export { sessionCost } from "./pricing.ts";
+
+// Self-host access gate (LH_ACCESS_TOKEN) — the /access sign-in route;
+// proxy.ts imports the module directly, like desktop-access.ts.
+export * from "./remote-access.ts";

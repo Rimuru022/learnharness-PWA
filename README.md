@@ -55,6 +55,10 @@ All three platforms support in-app updates.
 
 **Dictation:** Create a [Deepgram API key](https://console.deepgram.com/) with the **Member role or higher** ([required for token minting](https://developers.deepgram.com/reference/auth/tokens/grant)) and add it under **Settings → Providers → Dictation**. Choose the language below the key; **Multilingual** supports automatic recognition and mixed-language speech. A `403 Insufficient permissions` error during token minting can indicate an insufficient key role.
 
+### Self-host and use it from your phone
+
+Run LearnHarness on your own server (a VPS or home server) and install it on your phone as a web app: sessions, the graph and your keys stay on the server, and lessons continue across devices. One script sets it up behind Tailscale. See the [self-hosting guide](docs/self-hosting.md).
+
 ## Your keys, your data
 
 - **Your keys and models.** No LearnHarness subscription or markup. You pay your providers for usage; a live cost meter shows model costs.

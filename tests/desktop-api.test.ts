@@ -53,7 +53,9 @@ test("all methods fail closed for desktop missing/wrong secret; API-only matcher
 	}
 	assert(desktopAPIAuthorized(new Headers({ [HEADER]: secret }), { LH_DESKTOP_SERVER: "1", LH_DESKTOP_API_SECRET: secret }));
 	for (const pathname of ["/api/events", "/api/chat", "/api/settings/models", "/api/chats/scratch/markdown"]) assert(unstable_doesProxyMatch({ config, nextConfig: {}, url: origin + pathname }));
-	assert(!unstable_doesProxyMatch({ config, nextConfig: {}, url: origin + "/chat/new" }));
+	// Pages reach the proxy too (the self-host access gate), but the desktop
+	// gate only ever answers for /api — a page passes without the header.
+	for (const pathname of ["/_next/static/chunks/app.js", "/sw.js", "/manifest.webmanifest", "/pwa/icon-192.png", "/offline.html"]) assert(!unstable_doesProxyMatch({ config, nextConfig: {}, url: origin + pathname }), pathname);
 	const originalMarker = process.env.LH_DESKTOP_SERVER;
 	const originalSecret = process.env.LH_DESKTOP_API_SECRET;
 	try {
@@ -63,6 +65,7 @@ test("all methods fail closed for desktop missing/wrong secret; API-only matcher
 			assert.equal(proxy(new NextRequest(origin + "/api/settings", { method })).status, 403);
 			assert.equal(proxy(new NextRequest(origin + "/api/settings", { method, headers: { [HEADER]: secret } })).headers.get("x-middleware-next"), "1");
 		}
+		assert.equal(proxy(new NextRequest(origin + "/chat/new")).headers.get("x-middleware-next"), "1");
 	} finally {
 		if (originalMarker === undefined) delete process.env.LH_DESKTOP_SERVER; else process.env.LH_DESKTOP_SERVER = originalMarker;
 		if (originalSecret === undefined) delete process.env.LH_DESKTOP_API_SECRET; else process.env.LH_DESKTOP_API_SECRET = originalSecret;

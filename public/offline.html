@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#141414">
+<title>LearnHarness — server unreachable</title>
+<style>
+	html, body { height: 100%; margin: 0; background: #141414; color: #e5e5e5; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+	main { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 2rem; box-sizing: border-box; text-align: center; }
+	img { width: 64px; height: 64px; }
+	p { max-width: 28rem; line-height: 1.5; color: #a3a3a3; font-size: 0.875rem; }
+	button { font: inherit; color: #141414; background: #e5e5e5; border: 0; border-radius: 0.5rem; padding: 0.6rem 1.2rem; cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+	<img src="/pwa/icon-192.png" alt="">
+	<h1 style="font-size:1rem;font-weight:600;margin:0">Can't reach your LearnHarness server</h1>
+	<p>Your sessions and graph live on your server, so the app needs a connection to it. Check that this device is connected to Tailscale (or your network) and that the server is running.</p>
+	<button type="button" onclick="location.reload()">Retry</button>
+</main>
+</body>
+</html>

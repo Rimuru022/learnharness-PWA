@@ -1,0 +1,22 @@
+# systemd unit for a self-hosted LearnHarness (see docs/self-hosting.md).
+# setup.sh fills in __USER__ and __APP_DIR__ and installs it as
+# /etc/systemd/system/learnharness.service.
+[Unit]
+Description=LearnHarness (self-hosted)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__USER__
+WorkingDirectory=__APP_DIR__
+EnvironmentFile=__ENV_FILE__
+Environment=NODE_ENV=production
+# Binds to 127.0.0.1 only — Tailscale (or another reverse proxy) is the
+# only way in from other devices.
+ExecStart=/usr/bin/env npm run serve
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

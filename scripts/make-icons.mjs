@@ -15,7 +15,7 @@
 // edges than downsampling a raster. Committed outputs; rerun only when
 // the design changes: `node scripts/make-icons.mjs`.
 import { Resvg } from "@resvg/resvg-js";
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -53,3 +53,30 @@ console.log(`build/icon.ico  ${ICO_SIZES.join("/")} — ${(ico.length / 1024).to
 const png512 = render(512);
 writeFileSync(path.join(root, "build", "icon.png"), png512);
 console.log(`build/icon.png  512×512 — ${(png512.length / 1024).toFixed(1)} KB`);
+
+// ---- public/pwa/*: the installable web app (self-host PWA) ---------------
+// "any" icons keep the squircle's transparency; the maskable icon and the
+// iOS touch icon sit on the app background (#141414) because launchers
+// crop maskable icons to their own shape and iOS fills transparency black.
+// The maskable glyph stays inside the 80% safe zone the spec requires.
+const PWA_BG = "#141414";
+const onBackground = (size, scale) => {
+	const inner = Math.round(size * scale);
+	const pad = Math.round((size - inner) / 2);
+	const framed = svg.replace(
+		/<svg([^>]*)>/,
+		`<svg$1><rect x="-${(pad * 1024) / inner}" y="-${(pad * 1024) / inner}" width="${(size * 1024) / inner}" height="${(size * 1024) / inner}" fill="${PWA_BG}"/>`,
+	).replace(/viewBox="0 0 1024 1024"/, `viewBox="-${(pad * 1024) / inner} -${(pad * 1024) / inner} ${(size * 1024) / inner} ${(size * 1024) / inner}"`);
+	return new Resvg(framed, { fitTo: { mode: "width", value: size } }).render().asPng();
+};
+const pwaDir = path.join(root, "public", "pwa");
+mkdirSync(pwaDir, { recursive: true });
+for (const [name, buf] of [
+	["icon-192.png", render(192)],
+	["icon-512.png", render(512)],
+	["icon-maskable-512.png", onBackground(512, 0.7)],
+	["apple-touch-icon.png", onBackground(180, 0.86)],
+]) {
+	writeFileSync(path.join(pwaDir, name), buf);
+	console.log(`public/pwa/${name} — ${(buf.length / 1024).toFixed(1)} KB`);
+}

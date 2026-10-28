@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Source_Sans_3 } from "next/font/google";
 import "katex/dist/katex.min.css";
 import "./globals.css";
@@ -7,6 +7,7 @@ import { ActivityProvider } from "@/components/activity-dock";
 import { ServerEventsProvider } from "@/components/server-events";
 import { AppearanceProvider } from "@/components/settings/appearance";
 import UpdateBanner from "@/components/update-banner";
+import { PwaRegister } from "@/components/pwa-register";
 
 // Chrome = JetBrains Mono, teaching prose = Source Sans 3, titles = CMU
 // Serif (the bundled lh-cmu @font-face in globals.css — no CDN).
@@ -16,6 +17,19 @@ const prose = Source_Sans_3({ subsets: ["latin"], variable: "--font-sans3" });
 export const metadata: Metadata = {
 	title: "Learning Harness",
 	description: "A teacher agent with a memory — sessions, quizzes, and a knowledge graph of what you know.",
+	// Installable web app (self-host PWA): iOS reads these instead of the manifest.
+	appleWebApp: { capable: true, title: "LearnHarness", statusBarStyle: "black" },
+	icons: { apple: "/pwa/apple-touch-icon.png" },
+};
+
+// Phones: let the on-screen keyboard shrink the layout so the composer stays
+// visible. No viewport-fit=cover — the browser keeps content inside the
+// safe areas (notch, home indicator) without per-component insets.
+export const viewport: Viewport = {
+	themeColor: "#141414",
+	width: "device-width",
+	initialScale: 1,
+	interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -35,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 			</ServerEventsProvider>
 			{/* Auto-update banner (Wave C): fixed card, Electron-only pushes. */}
 			<UpdateBanner />
+			<PwaRegister />
 		</body>
 		</html>
 	);

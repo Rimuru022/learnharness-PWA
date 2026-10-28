@@ -81,9 +81,19 @@ declare global {
 	}
 }
 
-const SidebarContext = createContext<{ open: boolean; toggle: () => void }>({
+/** Phone-width layout (self-host PWA, 2026-10-28): below this the sidebar
+ *  stops sitting inline (it would take ~75% of a phone screen) and becomes
+ *  an overlay drawer — closed by default, never persisted, dismissed by
+ *  the backdrop or by navigating. Tailwind's `md` breakpoint. */
+const MOBILE_QUERY = "(max-width: 767px)";
+// Guarded: non-browser DOMs (the test renderer) have no matchMedia.
+const mobileQuery = () => (typeof window.matchMedia === "function" ? window.matchMedia(MOBILE_QUERY) : null);
+
+const SidebarContext = createContext<{ open: boolean; mobile: boolean; toggle: () => void; close: () => void }>({
 	open: false,
+	mobile: false,
 	toggle: () => {},
+	close: () => {},
 });
 
 export function useSidebar() {
@@ -102,7 +112,9 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 	// mismatch); the stored value is applied after mount.
 	const [open, setOpen] = useState(false);
 	const [narrow, setNarrow] = useState(false);
+	const [mobile, setMobile] = useState(false);
 	const [mounted, setMounted] = useState(false);
+	const pathname = usePathname();
 
 	useEffect(() => {
 		// Electron shell detection (merged chrome, 2026-09-17): keys the
@@ -126,8 +138,11 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 		void window.lh?.getZoom?.().then(setZoomVar);
 
 		const stored = localStorage.getItem(STORAGE_KEY);
-		// Default: open (first run introduces the sidebar).
-		setOpen(stored === null ? true : stored === "1");
+		// Default: open (first run introduces the sidebar). Phones start
+		// closed — the drawer covers the page, so it opens on demand only.
+		const isMobile = mobileQuery()?.matches ?? false;
+		setMobile(isMobile);
+		setOpen(isMobile ? false : stored === null ? true : stored === "1");
 		setMounted(true);
 		return () => off?.();
 	}, []);
@@ -144,7 +159,34 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 		return () => window.removeEventListener("resize", onResize);
 	}, []);
 
+	// Phone-width tracking (rotation, split-screen). Crossing into mobile
+	// closes the drawer; crossing out restores the persisted preference.
+	useEffect(() => {
+		const mq = mobileQuery();
+		if (!mq) return;
+		const onChange = () => {
+			setMobile(mq.matches);
+			setOpen(mq.matches ? false : localStorage.getItem(STORAGE_KEY) !== "0");
+		};
+		mq.addEventListener("change", onChange);
+		return () => mq.removeEventListener("change", onChange);
+	}, []);
+
+	// The drawer is a navigation surface on phones: picking a session (or
+	// any route change) closes it so the page is visible.
+	useEffect(() => {
+		if (mobile) setOpen(false);
+	}, [pathname, mobile]);
+
+	const close = useCallback(() => setOpen(false), []);
+
 	const toggle = useCallback(() => {
+		// Phones: the drawer's open state is transient — never persisted,
+		// so the desktop preference is untouched.
+		if (mobile) {
+			setOpen((v) => !v);
+			return;
+		}
 		// Opening while narrow (auto-closed, or the user's own closed-at-
 		// narrow): ask the shell to widen to the threshold — the resize
 		// listener flips `narrow` and the sidebar appears. The preference
@@ -160,7 +202,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 			localStorage.setItem(STORAGE_KEY, v ? "0" : "1");
 			return !v;
 		});
-	}, [narrow, open]);
+	}, [narrow, open, mobile]);
 
 	// ⌘B: the global shortcut dispatches kbdEventForAction("toggle-sidebar")
 	// and the context answers on exactly that name — the shared spelling
@@ -176,7 +218,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 	}, [toggle]);
 
 	return (
-		<SidebarContext.Provider value={{ open: open && !narrow, toggle }}>
+		<SidebarContext.Provider value={{ open: open && !narrow, mobile, toggle, close }}>
 			{/* transitions gated on mount: no slide-in flash on page load */}
 			<div className={cn("flex h-dvh", mounted && "[&_.sidebar-motion]:transition-[width,margin,opacity]")}>{children}</div>
 		</SidebarContext.Provider>
@@ -196,7 +238,10 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
  *  The icon fades with the slot and is clipped by it as it collapses —
  *  no popping in either direction. */
 export function SidebarToggle() {
-	const { open, toggle } = useSidebar();
+	const { open: sidebarOpen, mobile, toggle } = useSidebar();
+	// Phones: the drawer overlays the header instead of pushing it, so the
+	// toggle keeps its slot (no header reflow under the drawer).
+	const open = sidebarOpen && !mobile;
 	return (
 		<span
 			className={cn(
@@ -387,7 +432,7 @@ export type SessionKindFilter = "teach" | "all" | "practice";
 const KIND_FILTER_KEY = "lh:session-kind-filter";
 
 function SessionsSidebar() {
-	const { open, toggle } = useSidebar();
+	const { open, mobile, toggle, close } = useSidebar();
 	const [chats, setChats] = useState<ChatListItem[] | null>(null);
 	const [query, setQuery] = useState("");
 	const [kindFilter, setKindFilter] = useState<SessionKindFilter>("all");
@@ -643,8 +688,17 @@ function SessionsSidebar() {
 	}, [open, pathname, refresh]);
 
 	return (
+		<>
+		{/* Phone drawer backdrop: tap outside to dismiss. */}
+		{mobile && open && (
+			<div aria-hidden className="fixed inset-0 z-40 bg-black/50" onClick={close} />
+		)}
 		<aside
-			className={cn("sidebar-motion shrink-0 overflow-hidden duration-200", open ? "w-72" : "w-0")}
+			className={cn(
+				"sidebar-motion shrink-0 overflow-hidden duration-200",
+				mobile && "fixed inset-y-0 left-0 z-50 bg-background",
+				open ? "w-72" : "w-0",
+			)}
 			aria-hidden={!open}
 		>
 			<div className="flex h-full w-72 flex-col border-r bg-background">
@@ -936,6 +990,7 @@ function SessionsSidebar() {
 					onDeleted={onDeleted}
 				/>
 			</aside>
+		</>
 	);
 }
 

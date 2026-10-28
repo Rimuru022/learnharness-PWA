@@ -175,7 +175,7 @@ export function MinimalHome({
 								className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground transition-colors hover:bg-accent"
 							>
 								<ListTreeIcon className="size-3" />
-								Chains
+								<span className="max-sm:sr-only">Chains</span>
 							</button>
 						</Hint>
 					</div>
@@ -189,7 +189,7 @@ export function MinimalHome({
 								className="flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-50"
 							>
 								<UploadIcon className="size-3" />
-								{importing ? "Importing…" : "Import notes…"}
+								<span className="max-sm:sr-only">{importing ? "Importing…" : "Import notes…"}</span>
 							</button>
 						</Hint>
 					</div>
