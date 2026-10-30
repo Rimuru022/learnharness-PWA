@@ -79,6 +79,22 @@ Conclusión: no hacía falta una app nueva. Bastaba con **una puerta de acceso, 
 - **Los proxies mienten sobre la URL.** Detrás de un reverse proxy, `request.url` no es lo que ve el usuario. `X-Forwarded-*` importa.
 - **Un cambio aditivo es más fácil de aceptar upstream.** Todo es opt-in: sin `LH_ACCESS_TOKEN` y en escritorio, el comportamiento es el mismo de antes.
 
+## Dictado en el móvil (2026-10-30)
+
+Síntoma: en Android (Chrome y Brave) el medidor de audio se movía, pero al parar el dictado no aparecía texto. En la laptop funcionaba.
+
+Cómo lo depuré, de fuera hacia dentro:
+
+1. **Servidor y API key**: la key de Deepgram era válida, `/api/stt/token` generaba tokens (local y vía Tailscale) y un WebSocket de prueba con esos parámetros transcribía. El servidor estaba bien.
+2. **Reproducción con navegador**: Chromium emulando un Pixel 7, con un WAV de voz (generado con el TTS de Deepgram) como micrófono falso y el WebSocket instrumentado. Así encontré dos cosas:
+   - El idioma del dictado del servidor era el valor por defecto, `en`; hablando en español, Deepgram devuelve transcripciones vacías. Se cambió a `multi`.
+   - A ancho de teléfono, el selector de modelo tapaba el botón de dictado/Stop.
+3. **Registros de Deepgram** (`/v1/projects/{id}/requests`): los intentos del teléfono posteriores al cambio de idioma **no llegaron**. La causa real estaba fuera del código: el DNS global de la tailnet apuntaba a una IP de LAN (`192.168.100.x`) que ya no existe, así que con Tailscale activo el teléfono solo resolvía `*.ts.net`. La app cargaba, pero `api.deepgram.com` (y la app de Claude) no.
+
+Cambio de código: en pantallas `max-sm`, la fila bajo el compositor se envuelve y el dictado ocupa su propia fila de ancho completo; el nombre del modelo no se parte en dos líneas. Escritorio sin cambios (verificado con capturas).
+
+Aprendizaje: cuando el audio "entra" pero no sale texto, hay que seguir el dato salto a salto (micrófono → worklet → WebSocket → proveedor) y mirar los registros del proveedor; el fallo puede estar en la red y no en la app.
+
 ## Próximos pasos
 
 - Notificaciones push cuando el agente termina un turno o una investigación en segundo plano.
