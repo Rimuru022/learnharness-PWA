@@ -106,7 +106,9 @@ export function StatsBar({
 			// (so its transparent gradient area never blocks scrolling) — this row
 			// must re-enable events or every control on it is dead (the model-
 			// control wave caught this live: buttons rendered, clicks never landed).
-			className="pointer-events-auto relative flex items-center justify-between gap-3 px-3 pt-2 text-xs text-muted-foreground"
+			// Phone width: the row wraps so dictation gets its own full-width
+			// line above the mode switch + model control (they overlapped).
+			className="pointer-events-auto relative flex items-center justify-between gap-3 px-3 pt-2 text-xs text-muted-foreground max-sm:flex-wrap max-sm:gap-y-2"
 		>
 			{/* The summary button + its popover: the popover anchors to this
 			    wrapper, CENTERED over the button itself (owner, stats round 2)
@@ -194,7 +196,7 @@ export function StatsBar({
 			    meter expand into the row's free width; justify-center keeps the
 			    lone idle mic button visually centered. */}
 			{dictationSlot && (
-				<div className="flex min-w-0 flex-1 items-center justify-center">{dictationSlot}</div>
+				<div className="flex min-w-0 flex-1 items-center justify-center max-sm:order-first max-sm:basis-full">{dictationSlot}</div>
 			)}
 			{/* The model + thinking control — one controller for the conversation
 			    agents (prober/teacher); the record's `turns` above still folds
