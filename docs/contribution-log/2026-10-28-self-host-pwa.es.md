@@ -95,6 +95,18 @@ Cambio de código: en pantallas `max-sm`, la fila bajo el compositor se envuelve
 
 Aprendizaje: cuando el audio "entra" pero no sale texto, hay que seguir el dato salto a salto (micrófono → worklet → WebSocket → proveedor) y mirar los registros del proveedor; el fallo puede estar en la red y no en la app.
 
+## Preguntas que reaparecen y lectura en el móvil (2026-10-31)
+
+Síntomas en una sesión real de teaching desde el teléfono: la pregunta "¿el plan es válido?" reaparecía aunque ya estaba aprobado; la pregunta tapaba el texto del teaching; y al intentar subir para leer, la página se recargaba.
+
+- **Pregunta del plan que reaparece**: en el historial había una pregunta de aprobación sin respuesta (el usuario contestó con un mensaje normal). El dock buscaba la pregunta pendiente en todo el historial, así que entre dos preguntas (mientras el teacher escribía) volvía a mostrar esa pregunta huérfana. Lo reproduje con el historial real en un script contra la lógica del dock. Upstream ya lo había corregido después de crear el fork ("never fall back to an older available question"), así que integré upstream 0.4.1 (123 commits; 3 conflictos menores con los cambios del fork) en lugar de parchearlo por mi cuenta.
+- **No se podía leer el teaching**: en el teléfono el dock crecía hasta ocupar toda la columna, sin dejar texto donde hacer scroll (y es ese scroll el que minimiza la pregunta). Ahora en `max-sm` ocupa como máximo el 60% de la altura.
+- **La página se recargaba**: el gesto de bajar sobre el dock llegaba al pull-to-refresh de Chrome. En pantallas táctiles se desactiva con `overscroll-behavior-y: none`.
+
+Verificación: 3194 tests en verde y la versión nueva probada en otro puerto con una copia de los datos reales antes de desplegar (con respaldo previo de los datos).
+
+Aprendizaje: antes de arreglar un bug en un fork, revisar si upstream ya lo resolvió; integrar su arreglo es más barato y mantiene el fork cerca del original.
+
 ## Próximos pasos
 
 - Notificaciones push cuando el agente termina un turno o una investigación en segundo plano.
