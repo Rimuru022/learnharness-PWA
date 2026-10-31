@@ -46,6 +46,17 @@ interface DockHeightElements {
 
 const pixels = (value: string) => Number.parseFloat(value) || 0;
 
+/** Phones: the expanded dock may take at most this share of the column, so
+ * a strip of the teaching text stays visible above it. Scrolling that strip
+ * is what collapses the dock; a full-height dock left nothing to scroll. */
+export const PHONE_DOCK_COLUMN_SHARE = 0.6;
+const PHONE_QUERY = "(max-width: 639px)";
+
+function dockColumnHeight(column: HTMLElement): number {
+	const phone = typeof window !== "undefined" && window.matchMedia?.(PHONE_QUERY).matches;
+	return phone ? Math.round(column.clientHeight * PHONE_DOCK_COLUMN_SHARE) : column.clientHeight;
+}
+
 /** Read natural geometry before writing any constraints. Cancel the shell's
  * animated height out of both ancestor measurements, then substitute its
  * natural content and borders. This stays valid during a WAAPI height morph
@@ -59,7 +70,7 @@ export function syncDockHeight(elements: DockHeightElements, expanded: boolean) 
 	const shellStyle = getComputedStyle(shell);
 	const questionStyle = question ? getComputedStyle(question) : null;
 	const budget = dockHeightBudget({
-		columnHeight: column.clientHeight,
+		columnHeight: dockColumnHeight(column),
 		outsideHeight: Math.max(height(block) - height(viewport), 0),
 		beforeShellHeight: Math.max(height(body) - height(shell), 0),
 		shellBorderHeight: pixels(shellStyle.borderTopWidth) + pixels(shellStyle.borderBottomWidth),

@@ -185,6 +185,15 @@ body {
 	font-family: var(--font-ui);
 }
 
+/* Touch screens: no pull-to-refresh. Scrolling up through a teaching
+   turn must never reload the page (mobile Chrome/Brave in a browser tab). */
+@media (pointer: coarse) {
+	html,
+	body {
+		overscroll-behavior-y: none;
+	}
+}
+
 /* Teaching prose (the markdown renderer's container gets .lh-prose):
    Source Sans 3 with the size/leading tokens; emphasis color bound to
    the settings-ready tokens. */
