@@ -107,6 +107,16 @@ Verificación: 3194 tests en verde y la versión nueva probada en otro puerto co
 
 Aprendizaje: antes de arreglar un bug en un fork, revisar si upstream ya lo resolvió; integrar su arreglo es más barato y mantiene el fork cerca del original.
 
+## Abrir chats desde el historial en el móvil (2026-11-01)
+
+Síntoma: al tocar un chat del historial en el teléfono "no lo seleccionaba" o tardaba mucho en entrar.
+
+- Medí la apertura con Playwright (Pixel 7) registrando cada petición. Abrir una sesión larga descargaba el registro completo **cuatro veces** (la página y tres `GET /api/chats/:id`), unos 1.8 MB cada vez y sin comprimir: ~7 MB por chat a través del relay de Funnel.
+- El 70% de esos bytes eran `thinkingSignature`: el razonamiento cifrado del modelo, que solo el servidor necesita para reenviarlo al proveedor. Ahora el navegador recibe el registro sin ese campo (`clientMessages`); el archivo en disco lo conserva. Cada carga pasó de 1.87 MB a ~470 KB.
+- En móvil el menú lateral se cerraba solo cuando el chat terminaba de cargar, así que parecía que el toque no había hecho nada. Ahora se cierra al tocar.
+
+Aprendizaje: en móvil, medir bytes por petición antes de culpar al servidor; el servidor respondía en 50 ms, el problema era cuánto se mandaba.
+
 ## Próximos pasos
 
 - Notificaciones push cuando el agente termina un turno o una investigación en segundo plano.
