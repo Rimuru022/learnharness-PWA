@@ -32,6 +32,7 @@ import { clearOpeningPrompt, readOpeningPromptEntry, stashOpeningPrompt, OPENING
 import { forwardDockWheel, useDockHeight } from "@/components/dock-height";
 import { QueuedSteersBody, type QueuedSteerLine } from "@/components/queued-steers";
 import { DictationBar, finishDictation, joinDictation, useDictation } from "@/components/dictation";
+import { useDictationActive } from "@/components/dictation-state";
 import { useFieldCycle } from "@/components/field-cycle";
 import { JobsContext } from "@/components/jobs-context";
 import { StatsBar } from "@/components/stats-bar";
@@ -2020,6 +2021,15 @@ function DockOverlay({
 	// revealed, the normal collapse machine rules apply untouched.
 	const [revealed, setRevealed] = useState(false);
 	const revealPending = requiresReveal && !revealed;
+	// Which field dictated speech lands in (teach checks): the reading field
+	// while the check is CLOSED — behind its reveal or collapsed by scroll —
+	// and the answer while it is OPEN. A live run keeps the field it started
+	// in (a scroll-collapse mid-answer must not move the transcript), so the
+	// claim only follows `expanded` while dictation is idle.
+	const dictating = useDictationActive();
+	const wantReadingClaim = requiresReveal && !expanded;
+	const [readingClaim, setReadingClaim] = useState(wantReadingClaim);
+	if (!dictating && readingClaim !== wantReadingClaim) setReadingClaim(wantReadingClaim);
 
 	const pendingId = pending?.key ?? null;
 	const initialPendingRef = useRef(pendingId);
@@ -2385,7 +2395,7 @@ function DockOverlay({
 										}
 									: undefined
 							}
-							claim={revealPending}
+							claim={readingClaim}
 						/>
 						</div>
 					)}
@@ -2405,12 +2415,17 @@ function DockOverlay({
 									expanded={expanded}
 									reveal={revealPending}
 									phase={phase}
-									onExpand={expandAndReveal}
+									onExpand={() => {
+										// Dictating reading thoughts: finish first so they
+										// land in the reading field, then open the check.
+										if (dictating && readingClaim) void finishDictation().then(() => expandAndRevealRef.current());
+										else expandAndReveal();
+									}}
 									onSubmit={onSubmitAnswer}
 									initialDraft={initialQuestionDraft}
 									onSaveDraft={onSaveQuestionDraft}
 									onEscape={dictationCancel}
-									dictationClaim={!revealPending}
+									dictationClaim={!readingClaim}
 									compactionRunning={compactionRunning}
 								/>
 							) : practice ? (
