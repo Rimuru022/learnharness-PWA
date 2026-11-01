@@ -2366,7 +2366,11 @@ function DockOverlay({
 					    teach-phase check waits — the same cue that collapses it. It
 					    claims dictated speech until the learner reveals the check
 					    (the dock reclaims then). Rides the check answer on submit. */}
+					{/* Phones: once the check is open, its own "Your thinking" is
+					    the one field shown; this one hides (still mounted, so its
+					    text still rides the answer). */}
 					{pending && requiresReveal && (
+						<div className={expanded ? "max-sm:hidden" : undefined}>
 						<ReadingThinkingField
 							value={readingThinking}
 							revision={readingThinkingRevision}
@@ -2383,6 +2387,7 @@ function DockOverlay({
 							}
 							claim={revealPending}
 						/>
+						</div>
 					)}
 					<div ref={shellRef} className="pointer-events-auto overflow-hidden rounded-2xl border bg-card shadow-lg">
 						{/* Include descendant margins (notably practice thinking's

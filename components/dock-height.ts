@@ -49,7 +49,7 @@ const pixels = (value: string) => Number.parseFloat(value) || 0;
 /** Phones: the expanded dock may take at most this share of the column, so
  * a strip of the teaching text stays visible above it. Scrolling that strip
  * is what collapses the dock; a full-height dock left nothing to scroll. */
-export const PHONE_DOCK_COLUMN_SHARE = 0.6;
+export const PHONE_DOCK_COLUMN_SHARE = 0.7;
 const PHONE_QUERY = "(max-width: 639px)";
 
 function dockColumnHeight(column: HTMLElement): number {

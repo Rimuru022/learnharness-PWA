@@ -907,7 +907,9 @@ function QuestionDockForm({
 								"field-sizing-content lh-input max-h-48 w-full resize-none bg-transparent px-2.5 py-2 outline-none placeholder:text-muted-foreground/70",
 								// Phase-scaled prominence: teaching invites depth,
 								// probing stays quick.
-								phase === "teach" ? "min-h-[4.5rem]" : "min-h-10",
+								// Phones start at one row (it grows as text arrives),
+								// leaving the height to the question itself.
+								phase === "teach" ? "min-h-[4.5rem] max-sm:min-h-10 max-sm:max-h-32" : "min-h-10",
 							)}
 						/>
 					)}
