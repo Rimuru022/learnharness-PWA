@@ -1,3 +1,4 @@
+import { clientMessages } from "@/src/core";
 import { compactionInFlight, deleteChatSession, getChat, isTurnRunning, sessionCoverage, sessionCost, stores, turnFailure, type ChatDeleteMode } from "@/src/server";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -16,7 +17,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 	// re-attach to a running turn; coverage is the chat view's ring meter.
 	return Response.json({
 		...chat,
-		messages: chat.messages,
+		// Minus thinking signatures: server-only replay data (clientMessages).
+		messages: clientMessages(chat.messages),
 		pricing: sessionCost(chat),
 		turnInFlight: isTurnRunning(id),
 		// Also reaches idle views that missed the failing turn's stream.

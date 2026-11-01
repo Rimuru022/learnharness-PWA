@@ -884,6 +884,9 @@ function SessionsSidebar() {
 									kbdSelected={i === kbdIndex}
 									onOpen={() => {
 										setKbdIndex(null);
+										// Phones: close the drawer on the tap itself, so the
+										// pick is visible while the session loads.
+										if (mobile) close();
 										router.push(`/chat/${c.id}`);
 									}}
 									onContextMenu={(e) => openContext(e, c)}

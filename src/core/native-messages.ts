@@ -935,3 +935,23 @@ export function needsContinuation(messages: readonly LhMessage[]): boolean {
 	);
 	return calls.length > 0 && calls.every((b) => answered.has(b.id!));
 }
+
+/** The record's messages as the BROWSER receives them (self-host, phone
+ *  bandwidth): identical, minus each thinking block's `thinkingSignature`.
+ *  The signature is an opaque provider payload replayed server-side only
+ *  (the record on disk keeps it); the client never reads or sends it back,
+ *  yet it was ~70% of a long session's bytes, re-downloaded on every
+ *  record fetch. Unchanged messages are returned as-is (no copy). */
+export function clientMessages(messages: readonly LhMessage[]): LhMessage[] {
+	return messages.map((m) => {
+		if (m.role !== "assistant" || !m.content.some((b) => b.type === "thinking" && b.thinkingSignature !== undefined)) return m;
+		return {
+			...m,
+			content: m.content.map((b) => {
+				if (b.type !== "thinking" || b.thinkingSignature === undefined) return b;
+				const { thinkingSignature: _signature, ...rest } = b;
+				return rest;
+			}),
+		};
+	});
+}
