@@ -117,6 +117,16 @@ Síntoma: al tocar un chat del historial en el teléfono "no lo seleccionaba" o 
 
 Aprendizaje: en móvil, medir bytes por petición antes de culpar al servidor; el servidor respondía en 50 ms, el problema era cuánto se mandaba.
 
+## Una sola caja de texto y la pregunta más grande (2026-11-01)
+
+Con la pregunta abierta en el teléfono se veían dos cajas a la vez ("Thinking while reading" arriba y "Your thinking" abajo), y entre ellas la pregunta quedaba en una línea. La primera es de upstream y sirve para anotar ideas mientras lees, antes de abrir la pregunta. Cambios, solo en móvil:
+
+- Al abrir la pregunta, "Thinking while reading" se oculta (sigue montada, así que lo escrito ahí se envía con la respuesta como antes). Mientras lees con la pregunta cerrada sigue siendo la única caja.
+- "Your thinking" empieza en una línea y crece al escribir o dictar.
+- El dock puede ocupar hasta el 70% de la altura (antes 60%).
+
+Resultado medido: el área de la pregunta pasó de ~1 línea a 237 px (enunciado completo y primera opción visibles), y arriba sigue quedando texto del teaching para hacer scroll.
+
 ## Próximos pasos
 
 - Notificaciones push cuando el agente termina un turno o una investigación en segundo plano.
