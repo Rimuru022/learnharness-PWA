@@ -123,9 +123,9 @@ Con la pregunta abierta en el teléfono se veían dos cajas a la vez ("Thinking 
 
 - Al abrir la pregunta, "Thinking while reading" se oculta (sigue montada, así que lo escrito ahí se envía con la respuesta como antes). Mientras lees con la pregunta cerrada sigue siendo la única caja.
 - "Your thinking" empieza en una línea y crece al escribir o dictar.
-- El dock puede ocupar hasta el 70% de la altura (antes 60%).
+- El dock puede ocupar hasta el 80% de la altura (se probó 60% y 70%; el usuario eligió 80%).
 
-Resultado medido: el área de la pregunta pasó de ~1 línea a 237 px (enunciado completo y primera opción visibles), y arriba sigue quedando texto del teaching para hacer scroll.
+Resultado medido: el área de la pregunta pasó de ~1 línea a 315 px (enunciado y dos opciones completas visibles), y arriba sigue quedando texto del teaching para hacer scroll.
 
 ## Próximos pasos
 
