@@ -127,6 +127,19 @@ Con la pregunta abierta en el teléfono se veían dos cajas a la vez ("Thinking 
 
 Resultado medido: el área de la pregunta pasó de ~1 línea a 315 px (enunciado y dos opciones completas visibles), y arriba sigue quedando texto del teaching para hacer scroll.
 
+## Dictado: notas de lectura vs. respuesta (2026-11-01)
+
+Síntoma: con la pregunta cerrada, leyendo el teaching, el dictado acababa en la respuesta de la pregunta en vez de en "Thinking while reading".
+
+Causa: la app decidía el destino del dictado según si la pregunta se había abierto **alguna vez**, no según si estaba abierta **ahora**. Tras abrirla una vez, al subir para releer (la pregunta se minimiza) el dictado seguía yendo a la respuesta. Además, tocar la barra para abrir la pregunta no detenía el dictado (solo la tecla Enter lo hacía).
+
+Arreglo (`readingClaim` en `components/chat.tsx`):
+- Pregunta cerrada → "Thinking while reading"; pregunta abierta → "Your thinking".
+- Un dictado en curso mantiene su caja hasta terminar (si la pregunta se minimiza mientras contestas, no se mueve).
+- Abrir la pregunta mientras dictas notas de lectura detiene el dictado, guarda el texto en "Thinking while reading" y luego abre la pregunta.
+
+Verificación: prueba de punta a punta con Playwright (Pixel 7), micrófono simulado con un WAV de voz y Deepgram real, sobre una copia de los datos: los cuatro casos (cerrada, abrir mientras dicta, abierta, minimizada por scroll) dejan el texto en la caja correcta.
+
 ## Próximos pasos
 
 - Notificaciones push cuando el agente termina un turno o una investigación en segundo plano.
